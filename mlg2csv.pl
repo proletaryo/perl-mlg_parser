@@ -31,6 +31,16 @@ use warnings;
 my $href_LookupData = {};
 my $DataStreamStarted = undef;
 
+my $MessageType = undef;
+my $PrimaryAccountNumber = undef;
+my $ProcessingCode = undef;
+my $SystemTraceNumber = undef;
+my $RetrievalReferenceNumber = undef;
+my $TimeLeg1 = undef;
+my $TimeLeg2 = undef;
+my $TimeLeg3 = undef;
+my $TimeLeg4 = undef;
+
 # process pipe
 while(<>) {
   chomp($_);
@@ -38,15 +48,6 @@ while(<>) {
   # remove trailing \cM
   $_ =~ tr/\cM//d;
 
-  my $MessageType = undef;
-  my $PrimaryAccountNumber = undef;
-  my $ProcessingCode = undef;
-  my $SystemTraceNumber = undef;
-  my $RetrievalReferenceNumber = undef;
-  my $TimeLeg1 = undef;
-  my $TimeLeg2 = undef;
-  my $TimeLeg3 = undef;
-  my $TimeLeg4 = undef;
 
   # mark beginning of data stream
   if ($_ =~ /^Incoming Message.+\(9001\) at (.+)$/) { # leg 1
@@ -80,6 +81,9 @@ while(<>) {
     # store data
     if (defined($PrimaryAccountNumber)) {
       $href_LookupData->{$UniqueKey}->{'PrimaryAccountNumber'} = $PrimaryAccountNumber;
+    }
+    if (defined($MessageType)) {
+      $href_LookupData->{$UniqueKey}->{'MessageType'} = $MessageType;
     }
     if (defined($ProcessingCode)) {
       $href_LookupData->{$UniqueKey}->{'ProcessingCode'} = $ProcessingCode;
@@ -124,7 +128,7 @@ while(<>) {
     #  11 System Trace Number..... 038468
     #  37 Retrieval Reference No.. 1c8dc7e5646a
     # if ($_ =~ /^Message Type\.+ (\d+)$/) {
-    if ($_ =~ /^Message Type\.+/) {
+    if ($_ =~ /^Message Type\.+ (\d+)/) {
       $MessageType = $1;
 
       # TODO: sanity check, 0200 is only for Leg1
@@ -147,17 +151,19 @@ while(<>) {
 # print the data
 for my $m_key (keys %$href_LookupData) {
 
-    my $PrimaryAccountNumber = $href_LookupData->{$m_key}->{'PrimaryAccountNumber'};
-    my $ProcessingCode = $href_LookupData->{$m_key}->{'ProcessingCode'};
-    my $SystemTraceNumber = $href_LookupData->{$m_key}->{'SystemTraceNumber'};
-    my $RetrievalReferenceNumber = $href_LookupData->{$m_key}->{'RetrievalReferenceNumber'};
-    my $TimeLeg1 = $href_LookupData->{$m_key}->{'TimeLeg1'};
-    my $TimeLeg2 = $href_LookupData->{$m_key}->{'TimeLeg2'};
-    my $TimeLeg3 = $href_LookupData->{$m_key}->{'TimeLeg3'};
-    my $TimeLeg4 = $href_LookupData->{$m_key}->{'TimeLeg4'};
+    my $PrimaryAccountNumber =      defined($href_LookupData->{$m_key}->{'PrimaryAccountNumber'}) ? $href_LookupData->{$m_key}->{'PrimaryAccountNumber'} : next ;
+    my $MessageType =            defined($href_LookupData->{$m_key}->{'MessageType'}             ) ? $href_LookupData->{$m_key}->{'MessageType'} : next ;
+    my $ProcessingCode =            defined($href_LookupData->{$m_key}->{'ProcessingCode'}             ) ? $href_LookupData->{$m_key}->{'ProcessingCode'} : next ;
+    my $SystemTraceNumber =         defined($href_LookupData->{$m_key}->{'SystemTraceNumber'}          ) ? $href_LookupData->{$m_key}->{'SystemTraceNumber'} : next ;
+    my $RetrievalReferenceNumber =  defined($href_LookupData->{$m_key}->{'RetrievalReferenceNumber'}   ) ? $href_LookupData->{$m_key}->{'RetrievalReferenceNumber'} : next ;
+    my $TimeLeg1 =                  defined($href_LookupData->{$m_key}->{'TimeLeg1'}                   ) ? $href_LookupData->{$m_key}->{'TimeLeg1'} : next ;
+    my $TimeLeg2 =                  defined($href_LookupData->{$m_key}->{'TimeLeg2'}                   ) ? $href_LookupData->{$m_key}->{'TimeLeg2'} : next ;
+    my $TimeLeg3 =                  defined($href_LookupData->{$m_key}->{'TimeLeg3'}                   ) ? $href_LookupData->{$m_key}->{'TimeLeg3'} : next ;
+    my $TimeLeg4 =                  defined($href_LookupData->{$m_key}->{'TimeLeg4'}                   ) ? $href_LookupData->{$m_key}->{'TimeLeg4'} : next ;
 
     # csv
     print $PrimaryAccountNumber . ',' .
+      $MessageType . ',' .
       $ProcessingCode . ',' .
       $SystemTraceNumber . ',' .
       $RetrievalReferenceNumber . ',' .
